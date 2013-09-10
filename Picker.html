@@ -4,7 +4,7 @@
   <title>Big/Little Picker</title>
   <style>
    body { font-family: sans-serif; font-size: 10pt; }
-   .step { text-align: center; display: block; margin-left: 2em; }
+   .step { text-align: center; /*display: block;*/ margin-left: 2em; }
    .step > div { display: inline-block; }
    input[type="submit"] { margin-top: 1em; }
    table { width: 100%; }
@@ -13,8 +13,102 @@
    ul { list-style-type: none }
   </style>
   <script src="hungarian.js"></script>
+  <script src="jquery-1.10.2.min.js"></script>
   <script>
-   
+   var num_littles;
+
+   $(function() {
+      $('#step2, #step3').hide();
+
+      $('#finish1').on('click', function() {
+         generateInputTable();
+
+         $('#step1').hide();
+         $('#step2').show();
+      });
+
+      $('#finish2').on('click', function() {
+         calculatePicks();
+
+         $('#step2').hide();
+         $('#step3').show();
+      });
+
+      $('#validate').on('click', validate);
+   });
+
+   function generateInputTable() {
+      var bigs = $('#bigs').val().split('\n');
+      var littles = $('#littles').val().split('\n');
+
+      num_littles = littles.length;
+
+      var tableHeader = $('<tr>');
+      tableHeader.append($('<th>&nbsp;</th>'))
+
+      for(var i = 0; i < littles.length; i++) {
+         tableHeader.append($('<th>').text(littles[i]));
+      }
+
+      $('#matrix').append(tableHeader);
+
+      for(var i = 0; i < bigs.length; i++) {
+         var row = $('<tr>');
+         row.append($('<th>').text(bigs[i]));
+
+         for(var j = 0; j < littles.length; j++) {
+            row.append(
+               $('<td>').append(
+                  $('<input type="text" size="3" name="pref_' + i + '_' + j + '">')
+               )
+            );
+         }
+
+         $('#matrix').append(row);
+      }
+   }
+
+   function calculatePicks() {
+
+   }
+
+   function validate() {
+      var rows = $('#matrix tr');
+      var any_invalid = false;
+
+      for(var x = 1; x < rows.length; x++) {
+         
+         var cells = $('input', rows[x]);
+         var used = [];
+
+         var invalid = false;
+
+         for(var y = 0; y < cells.length; y++) {
+
+            if($(cells[y]).val() == null        ||
+               $(cells[y]).val() == ""          ||
+               $(cells[y]).val() < 1            ||
+               $(cells[y]).val() > num_littles  ||
+               $.inArray($(cells[y]).val(), used) > -1) {
+               invalid = true;
+               break;
+            }
+
+            used.push($(cells[y]).val());
+         }
+         
+         if(invalid) {
+            any_invalid = true;
+            $(rows[x]).addClass('invalid');
+         } else
+            $(rows[x]).removeClass('invalid');
+      }
+
+      if(!any_invalid)
+         $('#matrix').addClass('valid');
+      else
+         $('#matrix').removeClass('valid');
+   }
   </script>
  </head>
  <body>
@@ -22,7 +116,7 @@
    <div>
     <h2>Big/Little Prefs Step 1</h2>
     <p>Enter one person per line. There may be fewer bigs but not fewer littles.</p>
-    <form method="post" action="matrix.cgi">
+    <form>
      <table>
       <tr>
        <th><label for="bigs">Bigs</label></th>
@@ -41,20 +135,12 @@
    <div>
     <h2>Big/Little Prefs Step 2</h2>
     <p>Enter each big's preferences. The validate button will check that each number is used only once per line.</p>
-    <form method="post" action="hungarian.cgi">
-     <table>
-      <tr>
-       <th>&nbsp;</th>
-       <th>littles[x]</th>
-      </tr>
-      <tr>
-       <th>bigs[x]</th>
-       <td><input type="text" size="3" value="pref_str[X]_str[Y]"></td>
-      </tr>
+    <form>
+     <table id="matrix">
      </table>
      <input type="hidden" name="bigs" value="','.join(bigs)">
      <input type="hidden" name="littles" value="','.join(littles)">
-     <input type="button" value="Validate" onclick="validate(str(len(littles)))">
+     <input type="button" id="validate" value="Validate">
      <input type="button" id="finish2" value="Continue">
     </form>
    </div>
