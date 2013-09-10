@@ -82,6 +82,9 @@
          }
       }
 
+      var littlesMap = {};
+      littles.forEach(function(item) { littlesMap[item] = true; });
+
       var assignments = hungarian(matrix);
 
       for(var i = 0; i < assignments.length; i++) {
@@ -94,11 +97,22 @@
 
          var little = littles[assignments[i][1]];
          result.append($('<td>').text(little));
+         delete littlesMap[little];
 
          var pick = matrix[assignments[i][0]][assignments[i][1]];
          result.append($('<td>').text(pick));
 
          $('#results').append(result);
+      }
+
+      for(var little in littlesMap) {
+         if(littlesMap.hasOwnProperty(little)) {
+            $('#not-assigned').show();
+
+            $('#not-assigned').append(
+               $('<li>').text(little)
+            );
+         }
       }
    }
 
