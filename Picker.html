@@ -15,10 +15,10 @@
   <script src="hungarian.js"></script>
   <script src="jquery-1.10.2.min.js"></script>
   <script>
-   var num_littles;
+   var bigs, num_bigs, littles, num_littles, matrix;
 
    $(function() {
-      $('#step2, #step3').hide();
+      $('#step2, #step3, #not-assigned').hide();
 
       $('#finish1').on('click', function() {
          generateInputTable();
@@ -38,9 +38,10 @@
    });
 
    function generateInputTable() {
-      var bigs = $('#bigs').val().split('\n');
-      var littles = $('#littles').val().split('\n');
+      bigs = $('#bigs').val().split('\n');
+      num_bigs = bigs.length;
 
+      littles = $('#littles').val().split('\n');
       num_littles = littles.length;
 
       var tableHeader = $('<tr>');
@@ -59,7 +60,7 @@
          for(var j = 0; j < littles.length; j++) {
             row.append(
                $('<td>').append(
-                  $('<input type="text" size="3" name="pref_' + i + '_' + j + '">')
+                  $('<input type="text" size="3">')
                )
             );
          }
@@ -69,7 +70,36 @@
    }
 
    function calculatePicks() {
+      var inputs = $('input[type=text]');
+      matrix = [];
 
+      for(var i = 0; i < num_bigs; i++) {
+         matrix.push([]);
+
+         for(var j = 0; j < num_littles; j++) {
+            var rank = parseInt(inputs.eq(i * num_littles + j).val());
+            matrix[i].push(rank);
+         }
+      }
+
+      var assignments = hungarian(matrix);
+
+      for(var i = 0; i < assignments.length; i++) {
+         var result = $('<tr>');
+
+         var big = bigs[assignments[i][0]];
+         result.append($('<td>').text(big));
+
+         result.append($('<td>&rarr;</td>'));
+
+         var little = littles[assignments[i][1]];
+         result.append($('<td>').text(little));
+
+         var pick = matrix[assignments[i][0]][assignments[i][1]];
+         result.append($('<td>').text(pick));
+
+         $('#results').append(result);
+      }
    }
 
    function validate() {
@@ -104,10 +134,13 @@
             $(rows[x]).removeClass('invalid');
       }
 
-      if(!any_invalid)
+      if(!any_invalid) {
          $('#matrix').addClass('valid');
-      else
+         $('#finish2').attr('disabled', null);
+      } else {
          $('#matrix').removeClass('valid');
+         $('#finish2').attr('disabled', true);
+      }
    }
   </script>
  </head>
@@ -138,34 +171,27 @@
     <form>
      <table id="matrix">
      </table>
-     <input type="hidden" name="bigs" value="','.join(bigs)">
-     <input type="hidden" name="littles" value="','.join(littles)">
      <input type="button" id="validate" value="Validate">
-     <input type="button" id="finish2" value="Continue">
+     <input type="button" id="finish2" value="Continue" disabled>
     </form>
    </div>
   </div>
   <div id="step3" class="step">
    <div>
     <h2>Big/Little Prefs Step 3</h2>
-    <table>
+    <table id="results">
      <tr>
       <th>Big</th>
       <th></th>
       <th>Little</th>
       <th>Pref</th>
      </tr>
-     <tr>
-      <td>bigs[x[0]]</td>
-      <td>&rarr;</td>
-      <td>littles[x[1]]</td>
-      <td>(str(cost_matrix[x[0]][x[1]]))</td>
-     </tr>
     </table>
-    <p>These littles were not assigned:</p>
-    <ul>
-     <li>x</li>
-    </ul>
+    <div id="not-assigned">
+     <p>These littles were not assigned:</p>
+     <ul id="not-list">
+     </ul>
+    </div>
    </div>
   </div>
  </body>
