@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+ <head>
+  <title>Big/Little Picker</title>
+  <style>
+   body { font-family: sans-serif; font-size: 10pt; }
+   .step { text-align: center; display: block; margin-left: 2em; }
+   .step > div { display: inline-block; }
+   input[type="submit"] { margin-top: 1em; }
+   table { width: 100%; }
+   .invalid { background: red; }
+   .valid { background: lime; }
+   ul { list-style-type: none }
+  </style>
+  <script src="hungarian.js"></script>
+  <script>
+   
+  </script>
+ </head>
+ <body>
+  <div id="step1" class="step">
+   <div>
+    <h2>Big/Little Prefs Step 1</h2>
+    <p>Enter one person per line. There may be fewer bigs but not fewer littles.</p>
+    <form method="post" action="matrix.cgi">
+     <table>
+      <tr>
+       <th><label for="bigs">Bigs</label></th>
+       <th><label for="littles">Littles</label></th>
+      </tr>
+      <tr>
+       <td><textarea id="bigs" name="bigs" rows="25" cols="20"></textarea></td>
+       <td><textarea id="littles" name="littles" rows="25" cols="20"></textarea></td>
+      </tr>
+     </table>
+     <input type="button" id="finish1" value="Continue">
+    </form>
+   </div>
+  </div>
+  <div id="step2" class="step">
+   <div>
+    <h2>Big/Little Prefs Step 2</h2>
+    <p>Enter each big's preferences. The validate button will check that each number is used only once per line.</p>
+    <form method="post" action="hungarian.cgi">
+     <table>
+      <tr>
+       <th>&nbsp;</th>
+       <th>littles[x]</th>
+      </tr>
+      <tr>
+       <th>bigs[x]</th>
+       <td><input type="text" size="3" value="pref_str[X]_str[Y]"></td>
+      </tr>
+     </table>
+     <input type="hidden" name="bigs" value="','.join(bigs)">
+     <input type="hidden" name="littles" value="','.join(littles)">
+     <input type="button" value="Validate" onclick="validate(str(len(littles)))">
+     <input type="button" id="finish2" value="Continue">
+    </form>
+   </div>
+  </div>
+  <div id="step3" class="step">
+   <div>
+    <h2>Big/Little Prefs Step 3</h2>
+    <table>
+     <tr>
+      <th>Big</th>
+      <th></th>
+      <th>Little</th>
+      <th>Pref</th>
+     </tr>
+     <tr>
+      <td>bigs[x[0]]</td>
+      <td>&rarr;</td>
+      <td>littles[x[1]]</td>
+      <td>(str(cost_matrix[x[0]][x[1]]))</td>
+     </tr>
+    </table>
+    <p>These littles were not assigned:</p>
+    <ul>
+     <li>x</li>
+    </ul>
+   </div>
+  </div>
+ </body>
+</html>
